@@ -1,2 +1,4 @@
 build/
 *.swp
+target/
+Cargo.lock

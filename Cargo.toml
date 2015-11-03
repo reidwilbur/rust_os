@@ -1,0 +1,11 @@
+[package]
+name = "melvin_os"
+version = "0.1.0"
+authors = ["Reid Wilbur <reid.wilbur@gmail.com>"]
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+rlibc = "*"
+

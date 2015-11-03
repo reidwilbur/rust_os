@@ -143,6 +143,7 @@ gdt64:
     dq gdt64
     
 section .bss
+; page table setup and stack setup
 align 4096
 p4_table:
     resb 4096
