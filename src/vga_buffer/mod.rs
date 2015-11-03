@@ -1,4 +1,6 @@
 use core::ptr::Unique;
+use core::fmt::Write;
+use spin::Mutex;
 
 #[repr(u8)]
 pub enum Color {
@@ -30,6 +32,7 @@ impl ColorCode {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 struct ScreenChar {
   ascii_character: u8,
   color_code: ColorCode,
@@ -73,16 +76,35 @@ impl Writer {
     unsafe{ self.buffer.get_mut() }
   }
 
-  fn new_line(&mut self) { }
+  fn new_line(&mut self) {
+    for row in 0..(BUFFER_HEIGHT-1) {
+      let buffer = self.buffer();
+      buffer.chars[row] = buffer.chars[row + 1];
+    }
+    self.clear_row(BUFFER_HEIGHT-1);
+    self.column_position = 0;
+  }
+
+  fn clear_row(&mut self, row: usize) {
+    let blank = ScreenChar {
+      ascii_character: b' ',
+      color_code: self.color_code,
+    };
+    self.buffer().chars[row] = [blank; BUFFER_WIDTH];
+  }
 }
 
-pub fn print_something() {
-  let mut writer = Writer {
-    column_position: 0,
-    color_code: ColorCode::new(Color::LightGreen, Color::Black),
-    buffer: unsafe { Unique::new(0xb8000 as *mut _) },
-  };
+pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
+  column_position: 0,
+  color_code: ColorCode::new(Color::White, Color::Blue),
+  buffer: unsafe{ Unique::new(0xb8000 as *mut _) },
+});
 
-  writer.write_byte(b'H');
+impl ::core::fmt::Write for Writer {
+  fn write_str(&mut self, s: &str) -> ::core::fmt::Result {
+    for byte in s.bytes() {
+      self.write_byte(byte)
+    }
+    Ok(())
+  }
 }
-

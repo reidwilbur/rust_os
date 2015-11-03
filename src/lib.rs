@@ -1,11 +1,11 @@
 #![no_std]
-#![feature(no_std, lang_items, const_fn, unique)]
+#![feature(no_std, lang_items, const_fn, unique, core_str_ext)]
 
 extern crate rlibc;
+extern crate spin;
 
 mod vga_buffer;
-
-use vga_buffer::{print_something};
+use core::fmt::Write;
 
 #[no_mangle]
 pub extern fn rust_main() {
@@ -20,7 +20,8 @@ pub extern fn rust_main() {
   let buffer_ptr = (0xb8000 + 1988) as *mut _;
   unsafe { *buffer_ptr = hello_colored };
 
-  print_something();
+  vga_buffer::WRITER.lock().write_str("monster monster\n");
+  write!(vga_buffer::WRITER.lock(), "Some line woof\n");
 
   loop{}
 }
