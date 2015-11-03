@@ -1,4 +1,5 @@
 global start
+extern long_mode_start
 
 section .text
 bits 32
@@ -13,6 +14,14 @@ start:
     call enable_paging
 
     lgdt [gdt64.pointer]
+
+    ; update selectors to use the gdt
+    mov ax, gdt64.data
+    mov ss, ax ; stack selector
+    mov ds, ax ; data selector
+    mov es, ax ; extra selector
+
+    jmp gdt64.code:long_mode_start
 
     ; print `OK` to screen
     mov dword [0xb8000], 0x2f4b2f4f
@@ -123,9 +132,11 @@ gdt64:
     dq 0 ; zero entry
     ; code segment
     ; descr type = 1, read/write = 1, executable = 1, 64bit = 1
+.code: equ $ - gdt64
     dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
     ; data segment
     ; descr type = 1, read/write = 1, executable = 1
+.data: equ $ - gdt64
     dq (1<<44) | (1<<47) | (1<<41)
 .pointer:
     dw $ - gdt64 - 1
