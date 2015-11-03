@@ -12,6 +12,8 @@ start:
     call setup_page_tables
     call enable_paging
 
+    lgdt [gdt64.pointer]
+
     ; print `OK` to screen
     mov dword [0xb8000], 0x2f4b2f4f
     hlt
@@ -116,6 +118,19 @@ enable_paging:
 
     ret
 
+section .rodata
+gdt64:
+    dq 0 ; zero entry
+    ; code segment
+    ; descr type = 1, read/write = 1, executable = 1, 64bit = 1
+    dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
+    ; data segment
+    ; descr type = 1, read/write = 1, executable = 1
+    dq (1<<44) | (1<<47) | (1<<41)
+.pointer:
+    dw $ - gdt64 - 1
+    dq gdt64
+    
 section .bss
 align 4096
 p4_table:
