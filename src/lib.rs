@@ -1,7 +1,11 @@
 #![no_std]
-#![feature(no_std, lang_items)]
+#![feature(no_std, lang_items, const_fn, unique)]
 
 extern crate rlibc;
+
+mod vga_buffer;
+
+use vga_buffer::{print_something};
 
 #[no_mangle]
 pub extern fn rust_main() {
@@ -15,6 +19,8 @@ pub extern fn rust_main() {
 
   let buffer_ptr = (0xb8000 + 1988) as *mut _;
   unsafe { *buffer_ptr = hello_colored };
+
+  print_something();
 
   loop{}
 }
